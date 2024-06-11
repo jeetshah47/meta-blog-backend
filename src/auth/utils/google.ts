@@ -1,24 +1,22 @@
 import { OAuth2Client } from 'google-auth-library';
+import appConfig from 'src/config/app.config';
+let oauth2Client: OAuth2Client;
 
-const CLIENT_ID =
-  '890754458041-8r52f28o6i58fa6ghg9j0gknnvu51ccn.apps.googleusercontent.com';
-const CLIENT_SECRET = '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';
-const REDIRECT_URL = 'http://localhost:3000/api/auth/google/callback';
-
-export const oauth2Client = new OAuth2Client({
-  clientId: CLIENT_ID,
-  clientSecret: CLIENT_SECRET,
-  redirectUri: REDIRECT_URL,
-});
+const initValues = () => {
+  const CLIENT_ID = appConfig().googleClient;
+  const CLIENT_SECRET = appConfig().googleSecret;
+  const REDIRECT_URL = 'http://localhost:3000/api/auth/google/callback';
+  oauth2Client = new OAuth2Client({
+    clientId: CLIENT_ID,
+    clientSecret: CLIENT_SECRET,
+    redirectUri: REDIRECT_URL,
+  });
+};
 
 const scopes = [
   'https://www.googleapis.com/auth/userinfo.profile',
   'https://www.googleapis.com/auth/userinfo.email',
 ];
-
-export const authUrl = oauth2Client.generateAuthUrl({
-  scope: scopes,
-});
 
 interface GoogleReponse {
   id: string;
@@ -47,5 +45,9 @@ export const getAuthCallBack = async (code: string) => {
 };
 
 export const getAuthUrl = () => {
+  initValues();
+  const authUrl = oauth2Client.generateAuthUrl({
+    scope: scopes,
+  });
   return { url: authUrl };
 };
