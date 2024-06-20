@@ -6,7 +6,7 @@ import {
 } from '@nestjs/websockets';
 import { MousePosition } from './interfaces/MouseInterface';
 import { OnModuleInit } from '@nestjs/common';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { ClientData } from './interfaces/Client';
 
 @WebSocketGateway({
@@ -19,16 +19,33 @@ export class MouseGateway implements OnModuleInit {
   server: Server;
   clients: { [index: string]: ClientData } = {};
   onModuleInit() {
+    let clientCount = 1;
     this.server.on('connection', (socket) => {
       console.log(socket.id);
       console.log('Connected');
+      // Add New Clients
       this.clients[socket.id] = {
-        color: Object.keys(this.clients).length + 1,
+        color: clientCount++,
         name: socket.id,
+        mousePosition: {
+          x: 0,
+          y: 0,
+          id: socket.id,
+        },
       };
-      console.log(this.clients);
+      this.server.emit('newConnection', { client: this.clients });
+
+      console.log('Clinet', this.clients);
+
+      //Remove Old Clients
+
+      socket.on('disconnect', () => {
+        delete this.clients[socket.id];
+        this.server.emit('client-disconnect', {
+          id: socket.id,
+        });
+      });
     });
-    this.server.emit('newConnection', { client: this.clients });
   }
 
   //   @SubscribeMessage('disconnect')
@@ -38,7 +55,8 @@ export class MouseGateway implements OnModuleInit {
 
   @SubscribeMessage('receiveUpdates')
   onReceiveUpdates(@MessageBody() body: MousePosition) {
-    console.log(body);
+    console.log(`From Client ${body.id}`, body);
+
     this.server.emit('sendUpdate', {
       mousePostion: body,
     });
