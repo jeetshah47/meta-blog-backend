@@ -19,8 +19,6 @@ export class UsersController {
     @Param('userId') userId: string,
     @Body() updateUser: Partial<CreateUserDto>,
   ) {
-    console.log(userId, updateUser);
-
     this.userService.updateUser(updateUser, userId);
   }
 }

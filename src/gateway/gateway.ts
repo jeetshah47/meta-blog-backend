@@ -7,11 +7,11 @@ import {
 import { MousePosition } from './interfaces/MouseInterface';
 import { OnModuleInit } from '@nestjs/common';
 import { Server } from 'socket.io';
-import { ClientData } from './interfaces/Client';
+import { ClientData, ClientInput } from './interfaces/Client';
 
 @WebSocketGateway({
   cors: {
-    origin: 'http://localhost:5173',
+    origin: '*',
   },
 })
 export class MouseGateway implements OnModuleInit {
@@ -48,17 +48,17 @@ export class MouseGateway implements OnModuleInit {
     });
   }
 
-  //   @SubscribeMessage('disconnect')
-  //   onDisconnect(socket: Socket) {
-  //     console.log('discconnnect', socket);
-  //   }
-
   @SubscribeMessage('receiveUpdates')
   onReceiveUpdates(@MessageBody() body: MousePosition) {
-    console.log(`From Client ${body.id}`, body);
-
     this.server.emit('sendUpdate', {
       mousePostion: body,
+    });
+  }
+
+  @SubscribeMessage('receiveInput')
+  onReceiveInput(@MessageBody() body: ClientInput) {
+    this.server.emit('sendInputs', {
+      data: body,
     });
   }
 }

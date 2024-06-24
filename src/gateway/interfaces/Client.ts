@@ -5,3 +5,8 @@ export interface ClientData {
   color: number;
   mousePosition: MousePosition;
 }
+
+export interface ClientInput {
+  input: string;
+  data?: undefined;
+}
