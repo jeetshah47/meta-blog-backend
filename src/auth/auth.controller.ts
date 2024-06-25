@@ -1,6 +1,12 @@
-import { Controller, Get, Query, Redirect } from '@nestjs/common';
-import { GoogleAuthService, GithubAuthService } from './auth.service';
+import { Body, Controller, Get, Post, Query, Redirect } from '@nestjs/common';
+import {
+  GoogleAuthService,
+  GithubAuthService,
+  CoreAuthService,
+} from './auth.service';
 import { GoogleAuthRequest } from './interfaces/GoogleAuth';
+import { User } from 'src/core/users/interface/UserResponse';
+import { AuthUserDto } from './dto/auth.dto';
 
 @Controller('api/auth/google')
 export class GoogleRedirectController {
@@ -32,11 +38,17 @@ export class GithubAuthController {
   }
 }
 
-@Controller('api/auth/login')
+@Controller('api/auth')
 export class AuthController {
-  constructor(private readonly appService: GoogleAuthService) {}
-  @Get('')
-  getResponse(): { status: number } {
-    return { status: 200 };
+  constructor(private readonly authService: CoreAuthService) {}
+  @Post('login')
+  async getJwtToken(
+    @Body() userData: AuthUserDto,
+  ): Promise<{ access_token: string; user: User }> {
+    const data = await this.authService.signIn(
+      userData.email,
+      userData.password,
+    );
+    return { ...data };
   }
 }

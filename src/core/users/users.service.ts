@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserResponse } from './interface/UserResponse';
+import { User, UserResponse } from './interface/UserResponse';
 import {
   readData,
   updateData,
@@ -12,10 +12,20 @@ import { sha256 } from 'src/auth/utils/encryptor';
 export class UsersService {
   async geAllUsers(): Promise<UserResponse> {
     const data = await readData('users');
-    console.log(await sha256('jeetshahlast@gmail.com'));
     return {
       users: { ...data },
     };
+  }
+
+  async findOneUser(email: string): Promise<User> {
+    try {
+      const shaId = await sha256(email);
+      const data = await readData('users', shaId);
+      return { ...data };
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
   }
 
   async checkUser(email: string) {

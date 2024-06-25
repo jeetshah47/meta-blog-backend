@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { getAuthCallBack, getAuthUrl } from './utils/google';
 import { GoogleAuthRequest } from './interfaces/GoogleAuth';
 import appConfig from 'src/config/app.config';
@@ -6,6 +6,33 @@ import axios from 'axios';
 import { GithubOAuthResponse } from './interfaces/GithubAuth';
 import { writeData } from 'src/framework/firebase/db.firebase';
 import { UsersService } from 'src/core/users/users.service';
+import { JwtService } from '@nestjs/jwt';
+import { User } from 'src/core/users/interface/UserResponse';
+
+@Injectable()
+export class CoreAuthService {
+  constructor(
+    private userService: UsersService,
+    private jwtService: JwtService,
+  ) {}
+
+  async signIn(
+    email: string,
+    password: string,
+  ): Promise<{ access_token: string; user: User }> {
+    const user = await this.userService.findOneUser(email);
+
+    if (!user || user.password.toString() !== password.toString()) {
+      throw new UnauthorizedException();
+    }
+    const payload = { sub: user.email, name: user.name };
+
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+      user: user,
+    };
+  }
+}
 
 @Injectable()
 export class GoogleAuthService {
