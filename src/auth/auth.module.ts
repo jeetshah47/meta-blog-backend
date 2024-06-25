@@ -1,11 +1,17 @@
 import { ConfigModule } from '@nestjs/config';
-import { AuthController, GoogleRedirectController } from './auth.controller';
-import { AuthService } from './auth.service';
+import {
+  AuthController,
+  GithubAuthController,
+  GoogleRedirectController,
+} from './auth.controller';
+import { GithubAuthService, GoogleAuthService } from './auth.service';
 import { Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
+import { UsersService } from 'src/core/users/users.service';
 
 @Module({
-  imports: [ConfigModule],
-  controllers: [GoogleRedirectController, AuthController],
-  providers: [AuthService],
+  imports: [ConfigModule, HttpModule],
+  controllers: [GoogleRedirectController, GithubAuthController, AuthController],
+  providers: [GoogleAuthService, GithubAuthService, UsersService],
 })
 export class AuthModule {}

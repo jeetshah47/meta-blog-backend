@@ -8,11 +8,11 @@ export class UsersController {
 
   @Get('/all')
   getAllUsers() {
-    this.userService.geAllUsers();
+    return this.userService.geAllUsers();
   }
   @Post('/create')
   addMultipleUsers(@Body() createUser: CreateUserDto) {
-    this.userService.addUsers(createUser);
+    return this.userService.addUsers(createUser);
   }
   @Put('/update/:userId')
   updateUser(

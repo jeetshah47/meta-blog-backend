@@ -3,18 +3,23 @@ import { getDatabase, ref, child, get, set, update } from 'firebase/database';
 
 const dbRef = ref(getDatabase(app));
 
-export const readData = (collection: string) => {
-  get(child(dbRef, `${collection}`))
+export const readData = (collection: string, id?: string) => {
+  const result = get(child(dbRef, `${collection}`))
     .then((snapshot) => {
       if (snapshot.exists()) {
+        if (id) {
+          return snapshot.val()[id];
+        }
         console.log(snapshot.val());
-      } else {
-        console.log('No data available');
+        return snapshot.val();
       }
+      return { data: null };
     })
     .catch((error) => {
       console.error(error);
+      return { error: 'Failed To Retrive Data' };
     });
+  return result;
 };
 
 export const writeData = <T>(collection: string, data: T, id: string) => {
