@@ -45,6 +45,20 @@ export class MouseGateway implements OnModuleInit {
           id: socket.id,
         });
       });
+
+      socket.on('get-document', async (documentId) => {
+        const document = documentId;
+        socket.join(documentId);
+        socket.emit('load-document', document.data);
+
+        socket.on('send-changes', (delta) => {
+          socket.broadcast.to(documentId).emit('receive-changes', delta);
+        });
+
+        socket.on('save-document', async (data) => {
+          socket.broadcast.to(documentId).emit('receive-changes', data);
+        });
+      });
     });
   }
 
@@ -55,7 +69,7 @@ export class MouseGateway implements OnModuleInit {
     });
   }
 
-  @SubscribeMessage('receiveInput')
+  @SubscribeMessage('get-document')
   onReceiveInput(@MessageBody() body: ClientInput) {
     this.server.emit('sendInputs', {
       data: body,
